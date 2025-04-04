@@ -99,7 +99,6 @@ docker run -d \
 Neon-CDN/
 ├── public/            # 前端静态文件
 │   ├── index.html
-│   └── assets/        # 静态资源
 ├── server.js          # 后端主程序
 ├── package.json       # 项目配置
 ├── LICENSE            # 开源协议
