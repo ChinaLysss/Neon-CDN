@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonCDN Pro</title>
+    <!-- 使用Google Fonts CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --font-primary: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-weight-bold: 600;
+            --font-weight-medium: 500;
+            --font-weight-regular: 400;
+            
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --secondary: #00cec9;
+            --dark: #2d3436;
+            --darker: #1e272e;
+            --light: #f5f6fa;
+            --danger: #ff7675;
+            --success: #00b894;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-primary);
+            font-weight: var(--font-weight-regular);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        .panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-weight: var(--font-weight-bold);
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .panel-header {
+            padding: 1.2rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .panel-title {
+            font-weight: var(--font-weight-bold);
+            letter-spacing: -0.5px;
+            margin-bottom: 0.8rem;
+            display: inline-block;
+        }
+
+        .upload-area {
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.highlight {
+            background: rgba(108, 92, 231, 0.15);
+            border-color: var(--primary);
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .file-input-wrapper i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .file-input-wrapper p {
+            margin-bottom: 0.5rem;
+            text-align: center;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .file-input-wrapper span {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #fileInput {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--glass);
+            border-radius: 4px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .file-list-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            padding: 1rem 1.5rem;
+            font-weight: var(--font-weight-medium);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .file-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            transition: background 0.2s;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .file-name {
+            word-break: break-all;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: var(--glass);
+            color: var(--light);
+        }
+
+        .breadcrumb {
+            display: flex;
+            padding: 1rem 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .breadcrumb-item a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb-separator {
+            margin: 0 0.5rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            background: var(--darker);
+            border-radius: 16px;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .preview-content {
+            width: 100%;
+        }
+
+        .status-message {
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status-message.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .success {
+            background: rgba(0, 184, 148, 0.15);
+            color: var(--success);
+            border-left: 3px solid var(--success);
+        }
+
+        .error {
+            background: rgba(255, 118, 117, 0.15);
+            color: var(--danger);
+            border-left: 3px solid var(--danger);
+        }
+
+        .info {
+            background: rgba(116, 185, 255, 0.15);
+            color: #74b9ff;
+            border-left: 3px solid #74b9ff;
+        }
+
+        .folder-icon { color: #ffbe76; }
+        .image-icon { color: #74b9ff; }
+        .code-icon { color: #00cec9; }
+        .doc-icon { color: #a29bfe; }
+        .archive-icon { color: #fd79a8; }
+        .audio-icon { color: #55efc4; }
+        .video-icon { color: #e17055; }
+        .unknown-icon { color: #636e72; }
+
+        @media (max-width: 768px) {
+            .file-list-header, .file-item {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+            .file-size {
+                display: none;
+            }
+            .container {
+                padding: 1rem;
+            }
+            .panel-header {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-box-open"></i>
+                <h1>NeonCDN</h1>
+            </div>
+            <div class="server-status">
+                <span id="currentPath">/</span>
+            </div>
+        </header>
+
+        <section class="panel upload-area" id="uploadArea">
+            <div class="panel-header">
+                <h2 class="panel-title">上传文件</h2>
+            </div>
+            <div class="upload-area">
+                <form id="uploadForm" class="upload-form">
+                    <div class="file-input-wrapper">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>拖放文件到此处或点击选择</p>
+                        <span>支持多文件上传 (最大 200MB)</span>
+                        <input type="file" id="fileInput" multiple>
+                    </div>
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">
+                        <i class="fas fa-upload"></i> 开始上传
+                    </button>
+                    <div id="uploadStatus" class="status-message"></div>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel file-browser">
+            <div class="panel-header">
+                <h2 class="panel-title">文件浏览器</h2>
+            </div>
+            <div class="breadcrumb" id="breadcrumb">
+                <div class="breadcrumb-item">
+                    <a href="#" data-path=""><i class="fas fa-home"></i></a>
+                </div>
+            </div>
+            <div class="file-list-header">
+                <div>文件名</div>
+                <div>大小</div>
+                <div>修改日期</div>
+                <div>操作</div>
+            </div>
+            <ul class="file-list" id="fileList">
+                <!-- 动态生成文件列表 -->
+            </ul>
+        </section>
+    </div>
+
+    <!-- 文件预览模态框 -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">文件预览</h3>
+                <button class="action-btn" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-content" id="previewContent"></div>
+                <div class="path-info" style="margin-top: 2rem;">
+                    <h4>CDN路径</h4>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                        <code id="cdnPath" style="flex: 1; word-break: break-all; background: rgba(0,0,0,0.3); padding: 0.8rem; border-radius: 8px;"></code>
+                        <button class="btn btn-secondary" id="copyPathBtn">
+                            <i class="fas fa-copy"></i> 复制
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/js/all.min.js"></script>
+    <script>
+        // 全局状态
+        let currentPath = '';
+        let uploadInProgress = false;
+        
+        // DOM元素
+        const fileListEl = document.getElementById('fileList');
+        const breadcrumbEl = document.getElementById('breadcrumb');
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const previewModal = document.getElementById('previewModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const previewContent = document.getElementById('previewContent');
+        const cdnPathEl = document.getElementById('cdnPath');
+        const copyPathBtn = document.getElementById('copyPathBtn');
+        const currentPathEl = document.getElementById('currentPath');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFiles(currentPath);
+            
+            // 上传处理
+            uploadForm.addEventListener('submit', handleUpload);
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // 拖放上传
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('highlight');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('highlight');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('highlight');
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelect();
+                }
+            });
+            
+            // 预览模态框
+            closeModalBtn.addEventListener('click', () => {
+                previewModal.classList.remove('active');
+            });
+            
+            // 复制路径
+            copyPathBtn.addEventListener('click', copyCDNPath);
+        });
+
+        // 加载文件列表
+        async function loadFiles(path) {
+            try {
+                const response = await fetch(`/api/list?path=${encodeURIComponent(path)}`);
+                if (!response.ok) throw new Error('获取文件列表失败');
+                
+                const data = await response.json();
+                renderFileList(data.files);
+                updateBreadcrumb(path);
+                currentPath = path;
+                currentPathEl.textContent = path ? `/${path}` : '/';
+            } catch (error) {
+                showStatusMessage(error.message, 'error');
+            }
+        }
+
+        // 渲染文件列表
+        function renderFileList(files) {
+            fileListEl.innerHTML = '';
+            
+            if (files.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.padding = '2rem';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = 'rgba(255,255,255,0.5)';
+                emptyMsg.textContent = '此目录为空';
+                fileListEl.appendChild(emptyMsg);
+                return;
+            }
+            
+            // 先显示目录，再显示文件
+            const dirs = files.filter(file => file.isDirectory);
+            const fileItems = files.filter(file => !file.isDirectory);
+            
+            [...dirs, ...fileItems].forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                
+                // 文件名列
+                const nameCol = document.createElement('div');
+                nameCol.className = 'file-info';
+                
+                const icon = document.createElement('div');
+                icon.className = 'file-icon ' + getFileIconClass(file);
+                icon.innerHTML = getFileIcon(file);
+                
+                const name = document.createElement('div');
+                name.className = 'file-name';
+                name.textContent = file.name;
+                
+                nameCol.appendChild(icon);
+                nameCol.appendChild(name);
+                
+                // 大小列
+                const sizeCol = document.createElement('div');
+                sizeCol.className = 'file-size';
+                sizeCol.textContent = file.isDirectory ? '-' : formatFileSize(file.size);
+                
+                // 日期列
+                const dateCol = document.createElement('div');
+                dateCol.className = 'file-date';
+                dateCol.textContent = new Date(file.mtime).toLocaleString();
+                
+                // 操作列
+                const actionsCol = document.createElement('div');
+                actionsCol.className = 'file-actions';
+                
+                if (file.isDirectory) {
+                    li.addEventListener('click', () => {
+                        const newPath = currentPath ? `${currentPath}/${file.name}` : file.name;
+                        loadFiles(newPath);
+                    });
+                    li.style.cursor = 'pointer';
+                } else {
+                    const previewBtn = document.createElement('button');
+                    previewBtn.className = 'action-btn';
+                    previewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                    previewBtn.title = '预览';
+                    previewBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        previewFile(file);
+                    });
+                    
+                    const linkBtn = document.createElement('button');
+                    linkBtn.className = 'action-btn';
+                    linkBtn.innerHTML = '<i class="fas fa-link"></i>';
+                    linkBtn.title = '获取链接';
+                    linkBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showCDNPath(file);
+                    });
+                    
+                    actionsCol.appendChild(previewBtn);
+                    actionsCol.appendChild(linkBtn);
+                }
+                
+                li.appendChild(nameCol);
+                li.appendChild(sizeCol);
+                li.appendChild(dateCol);
+                li.appendChild(actionsCol);
+                
+                fileListEl.appendChild(li);
+            });
+        }
+
+        // 获取文件图标
+        function getFileIcon(file) {
+            if (file.isDirectory) return '<i class="fas fa-folder"></i>';
+            
+            const ext = file.name.split('.').pop().toLowerCase();
+            const icons = {
+                // 图片
+                jpg: 'fa-file-image', jpeg: 'fa-file-image', png: 'fa-file-image',
+                gif: 'fa-file-image', svg: 'fa-file-image', webp: 'fa-file-image',
+                // 文档
+                pdf: 'fa-file-pdf',
+                doc: 'fa-file-word', docx: 'fa-file-word',
+                xls: 'fa-file-excel', xlsx: 'fa-file-excel',
+                ppt: 'fa-file-powerpoint', pptx: 'fa-file-powerpoint',
+                // 代码
+                html: 'fa-file-code', htm: 'fa-file-code',
+                js: 'fa-file-code', json: 'fa-file-code',
+                css: 'fa-file-code', php: 'fa-file-code',
+                py: 'fa-file-code', java: 'fa-file-code',
+                c: 'fa-file-code', cpp: 'fa-file-code',
+                sh: 'fa-file-code', bat: 'fa-file-code',
+                // 压缩包
+                zip: 'fa-file-archive', rar: 'fa-file-archive',
+                '7z': 'fa-file-archive', tar: 'fa-file-archive',
+                gz: 'fa-file-archive',
+                // 音频
+                mp3: 'fa-file-audio', wav: 'fa-file-audio',
+                // 视频
+                mp4: 'fa-file-video', avi: 'fa-file-video',
+                mov: 'fa-file-video', mkv: 'fa-file-video',
+                // 文本
+                txt: 'fa-file-alt', md: 'fa-file-alt',
+                log: 'fa-file-alt',
+                // 其他
+                exe: 'fa-cog', msi: 'fa-cog'
+            };
+            
+            return `<i class="fas ${icons[ext] || 'fa-file'}"></i>`;
+        }
+
+        // 获取文件图标颜色类
+        function getFileIconClass(file) {
+            if (file.isDirectory) return 'folder-icon';
+            
+            const ext = file.name.split('.').pop().toLowerCase();
+            const types = {
+                // 图片
+                jpg: 'image-icon', jpeg: 'image-icon', png: 'image-icon',
+                gif: 'image-icon', svg: 'image-icon', webp: 'image-icon',
+                // 代码
+                html: 'code-icon', htm: 'code-icon', js: 'code-icon',
+                css: 'code-icon', json: 'code-icon', php: 'code-icon',
+                py: 'code-icon', java: 'code-icon', sh: 'code-icon',
+                // 文档
+                pdf: 'doc-icon', doc: 'doc-icon', docx: 'doc-icon',
+                xls: 'doc-icon', xlsx: 'doc-icon', ppt: 'doc-icon',
+                // 压缩包
+                zip: 'archive-icon', rar: 'archive-icon', '7z': 'archive-icon',
+                // 音频
+                mp3: 'audio-icon', wav: 'audio-icon',
+                // 视频
+                mp4: 'video-icon', avi: 'video-icon', mov: 'video-icon'
+            };
+            
+            return types[ext] || 'unknown-icon';
+        }
+
+        // 更新面包屑导航
+        function updateBreadcrumb(path) {
+            breadcrumbEl.innerHTML = '';
+            
+            const rootItem = document.createElement('div');
+            rootItem.className = 'breadcrumb-item';
+            const rootLink = document.createElement('a');
+            rootLink.href = '#';
+            rootLink.dataset.path = '';
+            rootLink.innerHTML = '<i class="fas fa-home"></i>';
+            rootLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadFiles('');
+            });
+            rootItem.appendChild(rootLink);
+            breadcrumbEl.appendChild(rootItem);
+            
+            if (!path) return;
+            
+            const parts = path.split('/');
+            let currentPath = '';
+            
+            parts.forEach((part, index) => {
+                if (!part) return;
+                
+                currentPath = currentPath ? `${currentPath}/${part}` : part;
+                
+                const separator = document.createElement('div');
+                separator.className = 'breadcrumb-separator';
+                separator.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                breadcrumbEl.appendChild(separator);
+                
+                const item = document.createElement('div');
+                item.className = 'breadcrumb-item';
+                const link = document.createElement('a');
+                link.href = '#';
+                link.textContent = part;
+                link.dataset.path = currentPath;
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadFiles(currentPath);
+                });
+                
+                item.appendChild(link);
+                breadcrumbEl.appendChild(item);
+            });
+        }
+
+        // 处理文件选择
+        function handleFileSelect() {
+            if (fileInput.files.length > 0) {
+                let fileNames = [];
+                for (let i = 0; i < Math.min(fileInput.files.length, 3); i++) {
+                    fileNames.push(fileInput.files[i].name);
+                }
+                let message = `已选择 ${fileInput.files.length} 个文件: ${fileNames.join(', ')}`;
+                if (fileInput.files.length > 3) message += ' 等...';
+                
+                showStatusMessage(message, 'info');
+            }
+        }
+
+        // 处理文件上传
+        async function handleUpload(e) {
+            e.preventDefault();
+            
+            const files = fileInput.files;
+            if (files.length === 0) {
+                showStatusMessage('请先选择文件', 'error');
+                return;
+            }
+            
+            // 检查文件大小 (限制200MB)
+            let totalSize = 0;
+            for (let file of files) {
+                totalSize += file.size;
+                if (file.size > 200 * 1024 * 1024) {
+                    showStatusMessage(`文件 "${file.name}" 超过200MB限制`, 'error');
+                    return;
+                }
+            }
+            
+            if (uploadInProgress) return;
+            uploadInProgress = true;
+            
+            try {
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+                formData.append('path', currentPath);
+                
+                // 显示进度条
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
+                
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/upload', true);
+                
+                // 进度事件
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        progressBar.style.width = `${percent}%`;
+                    }
+                });
+                
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        showStatusMessage(`成功上传 ${result.uploadedCount} 个文件`, 'success');
+                        loadFiles(currentPath);
+                        fileInput.value = '';
+                    } else {
+                        throw new Error(xhr.statusText || '上传失败');
+                    }
+                };
+                
+                xhr.onerror = () => {
+                    throw new Error('网络错误，上传失败');
+                };
+                
+                xhr.send(formData);
+            } catch (error) {
+                showStatusMessage(error.message, 'error');
+            } finally {
+                uploadInProgress = false;
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> 开始上传';
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // 预览文件
+        async function previewFile(file) {
+            try {
+                const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
+                const response = await fetch(`/api/preview?path=${encodeURIComponent(filePath)}`);
+                
+                if (!response.ok) throw new Error('无法预览文件');
+                
+                const data = await response.json();
+                cdnPathEl.textContent = `/cdn_files/${filePath}`;
+                previewContent.innerHTML = '';
+                
+                // 设置模态框标题
+                document.getElementById('modalTitle').textContent = `预览: ${file.name}`;
+                
+                if (data.isImage) {
+                    const img = document.createElement('img');
+                    img.src = `/cdn_files/${filePath}`;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '60vh';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    img.style.borderRadius = '8px';
+                    img.alt = file.name;
+                    previewContent.appendChild(img);
+                } else if (data.isText) {
+                    const pre = document.createElement('pre');
+                    pre.style.background = 'rgba(0,0,0,0.3)';
+                    pre.style.padding = '1rem';
+                    pre.style.borderRadius = '8px';
+                    pre.style.overflowX = 'auto';
+                    pre.style.whiteSpace = 'pre-wrap';
+                    pre.textContent = data.content;
+                    previewContent.appendChild(pre);
+                } else if (data.isHTML) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `/cdn_files/${filePath}`;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '60vh';
+                    iframe.style.border = 'none';
+                    iframe.style.borderRadius = '8px';
+                    iframe.sandbox = 'allow-same-origin allow-scripts';
+                    previewContent.appendChild(iframe);
+                } else {
+                    const message = document.createElement('div');
+                    message.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-file" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <p style="margin-top: 1rem;">此文件类型不支持预览</p>
+                            <p>文件大小: ${formatFileSize(file.size)}</p>
+                        </div>
+                    `;
+                    previewContent.appendChild(message);
+                }
+                
+                previewModal.classList.add('active');
+            } catch (error) {
+                showStatusMessage(error.message, 'error');
+            }
+        }
+
+        // 显示CDN路径
+        function showCDNPath(file) {
+            const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
+            cdnPathEl.textContent = `/cdn_files/${filePath}`;
+            previewContent.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-link" style="font-size: 3rem; color: var(--primary);"></i>
+                    <h3 style="margin: 1rem 0;">CDN路径已生成</h3>
+                    <p>复制下方路径即可在项目中使用</p>
+                </div>
+            `;
+            document.getElementById('modalTitle').textContent = `CDN路径: ${file.name}`;
+            previewModal.classList.add('active');
+        }
+
+        // 复制CDN路径
+        function copyCDNPath() {
+            const path = cdnPathEl.textContent;
+            navigator.clipboard.writeText(path).then(() => {
+                const originalText = copyPathBtn.innerHTML;
+                copyPathBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                setTimeout(() => {
+                    copyPathBtn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+            });
+        }
+
+        // 显示状态消息
+        function showStatusMessage(message, type) {
+            uploadStatus.textContent = message;
+            uploadStatus.className = 'status-message ' + type;
+            uploadStatus.classList.add('show');
+            
+            setTimeout(() => {
+                uploadStatus.classList.remove('show');
+            }, 5000);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
